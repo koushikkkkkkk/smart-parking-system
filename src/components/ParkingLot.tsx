@@ -18,6 +18,8 @@ interface ParkingLotProps {
   selectedSlot?: ParkingSlot | null;
   userVehicle?: ParkingSlot | null;
   showRoute?: boolean;
+  onSlotConfirm?: (slot: ParkingSlot) => void;
+  onSlotCancel?: () => void;
 }
 
 const ROWS = 8;
@@ -28,10 +30,13 @@ export const ParkingLot: React.FC<ParkingLotProps> = ({
   onSlotSelect,
   selectedSlot,
   userVehicle,
-  showRoute = false
+  showRoute = false,
+  onSlotConfirm,
+  onSlotCancel
 }) => {
   const [slots, setSlots] = useState<ParkingSlot[]>([]);
   const [hoveredSlot, setHoveredSlot] = useState<string | null>(null);
+  const [pendingSlot, setPendingSlot] = useState<ParkingSlot | null>(null);
 
   // Initialize parking lot with random occupancy
   useEffect(() => {
@@ -64,22 +69,27 @@ export const ParkingLot: React.FC<ParkingLotProps> = ({
   }, []);
 
   const handleSlotClick = (slot: ParkingSlot) => {
-    if (slot.status === 'available' && onSlotSelect) {
-      onSlotSelect(slot);
+    if (slot.status === 'available') {
+      setPendingSlot(slot);
     }
   };
 
-  const reserveSlot = (slotId: string) => {
-    setSlots(prev => prev.map(slot => 
-      slot.id === slotId 
-        ? { ...slot, status: 'reserved', reservedAt: new Date(), reservedBy: 'current-user' }
-        : slot
-    ));
+  const handleConfirmSlot = () => {
+    if (pendingSlot && onSlotConfirm) {
+      onSlotConfirm(pendingSlot);
+      setPendingSlot(null);
+    }
+  };
+
+  const handleCancelSlot = () => {
+    setPendingSlot(null);
+    onSlotCancel?.();
   };
 
   const getSlotStatus = (slot: ParkingSlot) => {
     if (userVehicle?.id === slot.id) return 'user-vehicle';
     if (selectedSlot?.id === slot.id) return 'selected';
+    if (pendingSlot?.id === slot.id) return 'pending';
     return slot.status;
   };
 
@@ -107,22 +117,40 @@ export const ParkingLot: React.FC<ParkingLotProps> = ({
 
   const getSlotStyle = (slot: ParkingSlot) => {
     const status = getSlotStatus(slot);
-    const baseClasses = "w-12 h-8 m-1 rounded-lg border-2 transition-all duration-300 cursor-pointer transform hover:scale-110 relative";
+    const baseClasses = "w-12 h-8 m-1 rounded-lg transition-all duration-300 cursor-pointer transform relative";
     
     switch (status) {
       case 'available':
-        return `${baseClasses} slot-available hover:shadow-lg`;
+        return `${baseClasses} slot-available hover:scale-105`;
       case 'occupied':
         return `${baseClasses} slot-occupied cursor-not-allowed`;
       case 'reserved':
         return `${baseClasses} slot-reserved cursor-not-allowed`;
       case 'selected':
-        return `${baseClasses} bg-primary border-primary-glow pulse-glow`;
+        return `${baseClasses} slot-selected`;
+      case 'pending':
+        return `${baseClasses} slot-selected`;
       case 'user-vehicle':
-        return `${baseClasses} bg-secondary border-secondary-glow purple-glow`;
+        return `${baseClasses} slot-user-vehicle`;
       default:
         return baseClasses;
     }
+  };
+
+  // Generate curved route path
+  const generateRoutePath = () => {
+    if (!selectedSlot) return '';
+    
+    const entryX = 20;
+    const entryY = 60;
+    const targetX = (selectedSlot.col * 60) + 50;
+    const targetY = (selectedSlot.row * 40) + 100;
+    
+    // Create a curved path using cubic bezier
+    const midX = (entryX + targetX) / 2;
+    const midY = entryY + 50;
+    
+    return `M ${entryX} ${entryY} Q ${midX} ${midY} ${targetX} ${targetY}`;
   };
 
   const statistics = {
@@ -177,16 +205,30 @@ export const ParkingLot: React.FC<ParkingLotProps> = ({
             Entry Point
           </div>
           
+          {/* Route SVG Overlay */}
+          {showRoute && selectedSlot && (
+            <svg 
+              className="absolute inset-0 w-full h-full pointer-events-none z-10"
+              style={{ top: 0, left: 0 }}
+            >
+              <path
+                d={generateRoutePath()}
+                className="route-line"
+              />
+              {/* Route dots for visual enhancement */}
+              <circle cx="20" cy="60" r="4" className="route-dot" />
+              <circle cx={(selectedSlot.col * 60) + 50} cy={(selectedSlot.row * 40) + 100} r="4" className="route-dot" />
+            </svg>
+          )}
+          
           <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)` }}>
             {Array.from({ length: ROWS }, (_, row) => (
               <React.Fragment key={row}>
                 {row % 3 === 2 ? (
                   // Navigation path row
-                  <div 
-                    className="col-span-full h-6 bg-muted/30 rounded-lg flex items-center justify-center text-xs text-muted-foreground border border-dashed border-muted-foreground/30"
-                  >
+                  <div className="col-span-full h-8 nav-lane rounded-lg flex items-center justify-center text-xs text-muted-foreground">
                     <Car className="w-4 h-4 mr-2" />
-                    Navigation Lane
+                    <span className="font-medium">Navigation Lane {Math.floor(row / 3) + 1}</span>
                   </div>
                 ) : (
                   // Parking slot rows
@@ -216,8 +258,15 @@ export const ParkingLot: React.FC<ParkingLotProps> = ({
                         <div className="w-full h-full flex items-center justify-center text-xs font-medium">
                           {slot.status === 'occupied' && <Car className="w-3 h-3" />}
                           {slot.status === 'reserved' && <Clock className="w-3 h-3" />}
-                          {slot.status === 'available' && slot.id.split('-')[1]}
+                          {slot.status === 'available' && (
+                            <span className="text-success-foreground font-bold">
+                              {slot.id.split('-')[1]}
+                            </span>
+                          )}
                           {getSlotStatus(slot) === 'user-vehicle' && <Car className="w-3 h-3 text-secondary-foreground" />}
+                          {getSlotStatus(slot) === 'pending' && (
+                            <div className="w-2 h-2 bg-primary rounded-full animate-ping"></div>
+                          )}
                         </div>
                       </div>
                     );
@@ -229,21 +278,54 @@ export const ParkingLot: React.FC<ParkingLotProps> = ({
         </div>
       </div>
 
-      {/* Action Buttons */}
-      {selectedSlot && (
-        <div className="glass-card p-4 mt-4 slide-up">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Selected Slot</p>
-              <p className="font-medium text-primary">Slot {selectedSlot.id}</p>
+      {/* Slot Confirmation Panel */}
+      {pendingSlot && (
+        <div className="confirm-panel p-6 mt-4 space-y-4">
+          <div className="text-center space-y-2">
+            <h3 className="text-lg font-bold text-foreground">Confirm Parking Slot</h3>
+            <p className="text-muted-foreground">
+              You've selected slot <span className="text-primary font-bold">{pendingSlot.id}</span>
+            </p>
+          </div>
+          
+          <div className="glass-card p-4 border border-primary/30">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Slot ID:</span>
+                <span className="font-medium text-primary">{pendingSlot.id}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Level:</span>
+                <span className="font-medium">A1</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Distance:</span>
+                <span className="font-medium">~{Math.floor(Math.random() * 50) + 20}m</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">ETA:</span>
+                <span className="font-medium">~2 min</span>
+              </div>
             </div>
+          </div>
+          
+          <div className="flex gap-3">
+            <Button 
+              variant="ghost" 
+              size="lg" 
+              className="flex-1"
+              onClick={handleCancelSlot}
+            >
+              Cancel
+            </Button>
             <Button 
               variant="neon" 
-              onClick={() => reserveSlot(selectedSlot.id)}
-              className="pulse-glow"
+              size="lg" 
+              className="flex-1 pulse-glow"
+              onClick={handleConfirmSlot}
             >
               <Navigation className="w-4 h-4 mr-2" />
-              Reserve & Navigate
+              Confirm & Navigate
             </Button>
           </div>
         </div>

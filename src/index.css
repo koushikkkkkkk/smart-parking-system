@@ -162,20 +162,99 @@
     box-shadow: var(--shadow-purple);
   }
 
-  /* Parking Slot Styles */
+  /* Enhanced Parking Slot Styles */
   .slot-available {
-    @apply bg-success border-success-glow;
-    box-shadow: 0 0 10px hsl(var(--success-glow) / 0.3);
+    @apply bg-success/20 border-2 border-success;
+    box-shadow: 0 0 15px hsl(var(--success) / 0.4), inset 0 1px 0 hsl(var(--success) / 0.2);
+    background: linear-gradient(135deg, hsl(var(--success) / 0.15) 0%, hsl(var(--success) / 0.25) 100%);
+  }
+
+  .slot-available:hover {
+    @apply border-success-glow;
+    box-shadow: 0 0 25px hsl(var(--success) / 0.6), inset 0 1px 0 hsl(var(--success) / 0.3);
+    transform: scale(1.05) translateY(-2px);
   }
 
   .slot-occupied {
-    @apply bg-destructive border-destructive;
-    box-shadow: 0 0 10px hsl(var(--destructive) / 0.3);
+    @apply bg-destructive/20 border-2 border-destructive;
+    box-shadow: 0 0 10px hsl(var(--destructive) / 0.3), inset 0 1px 0 hsl(var(--destructive) / 0.1);
+    background: linear-gradient(135deg, hsl(var(--destructive) / 0.15) 0%, hsl(var(--destructive) / 0.25) 100%);
   }
 
   .slot-reserved {
-    @apply bg-warning border-warning-glow;
-    box-shadow: 0 0 10px hsl(var(--warning-glow) / 0.3);
+    @apply bg-warning/20 border-2 border-warning;
+    box-shadow: 0 0 12px hsl(var(--warning) / 0.4), inset 0 1px 0 hsl(var(--warning) / 0.2);
+    background: linear-gradient(135deg, hsl(var(--warning) / 0.15) 0%, hsl(var(--warning) / 0.25) 100%);
+  }
+
+  .slot-selected {
+    @apply bg-primary/30 border-2 border-primary;
+    box-shadow: 0 0 30px hsl(var(--primary) / 0.8), 0 0 60px hsl(var(--primary) / 0.4);
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.2) 0%, hsl(var(--primary) / 0.4) 100%);
+    animation: slot-pulse 2s ease-in-out infinite;
+  }
+
+  .slot-user-vehicle {
+    @apply bg-secondary/30 border-2 border-secondary;
+    box-shadow: 0 0 25px hsl(var(--secondary) / 0.6), inset 0 1px 0 hsl(var(--secondary) / 0.3);
+    background: linear-gradient(135deg, hsl(var(--secondary) / 0.2) 0%, hsl(var(--secondary) / 0.35) 100%);
+  }
+
+  /* Navigation Lanes */
+  .nav-lane {
+    @apply bg-gradient-to-r from-muted/10 via-muted/20 to-muted/10;
+    background-image: repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 10px,
+      hsl(var(--muted-foreground) / 0.1) 10px,
+      hsl(var(--muted-foreground) / 0.1) 20px
+    );
+    border: 1px dashed hsl(var(--muted-foreground) / 0.2);
+  }
+
+  /* Route Visualization */
+  .route-line {
+    stroke: hsl(var(--primary));
+    stroke-width: 3;
+    fill: none;
+    stroke-dasharray: 8 4;
+    animation: route-flow 2s linear infinite;
+    filter: drop-shadow(0 0 8px hsl(var(--primary) / 0.6));
+  }
+
+  .route-dot {
+    fill: hsl(var(--primary));
+    animation: route-pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes route-pulse {
+    0%, 100% {
+      opacity: 0.6;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+  }
+
+  /* Slot Pulse Animation */
+  @keyframes slot-pulse {
+    0%, 100% {
+      box-shadow: 0 0 30px hsl(var(--primary) / 0.8), 0 0 60px hsl(var(--primary) / 0.4);
+    }
+    50% {
+      box-shadow: 0 0 40px hsl(var(--primary) / 1), 0 0 80px hsl(var(--primary) / 0.6);
+    }
+  }
+
+  /* Confirmation Panel */
+  .confirm-panel {
+    @apply glass-card;
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.1) 0%, hsl(var(--secondary) / 0.1) 100%);
+    border: 1px solid hsl(var(--primary) / 0.3);
+    animation: slide-up 0.3s ease-out;
   }
 
   /* AR Interface */

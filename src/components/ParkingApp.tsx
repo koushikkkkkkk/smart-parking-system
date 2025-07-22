@@ -22,14 +22,15 @@ export const ParkingApp: React.FC = () => {
   const [navigationMode, setNavigationMode] = useState<'to-slot' | 'to-car'>('to-slot');
   const [showMobileMenu, setShowMobileMenu] = useState(false);
 
-  const handleSlotSelect = (slot: ParkingSlot) => {
-    setSelectedSlot(slot);
-  };
-
-  const handleStartNavigation = (slot: ParkingSlot) => {
+  const handleSlotConfirm = (slot: ParkingSlot) => {
     setSelectedSlot(slot);
     setNavigationMode('to-slot');
     setCurrentState('ar-navigation');
+  };
+
+  const handleSlotCancel = () => {
+    // Just clear any pending selection
+    console.log('Slot selection cancelled');
   };
 
   const handleNavigationComplete = () => {
@@ -224,10 +225,11 @@ export const ParkingApp: React.FC = () => {
         <div className="relative">
           {currentState === 'parking' && (
             <ParkingLot
-              onSlotSelect={handleStartNavigation}
+              onSlotConfirm={handleSlotConfirm}
+              onSlotCancel={handleSlotCancel}
               selectedSlot={selectedSlot}
               userVehicle={userVehicle}
-              showRoute={false}
+              showRoute={selectedSlot !== null}
             />
           )}
 
