@@ -2,41 +2,80 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Futuristic Smart Parking System Design Tokens */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Core Dark Theme */
+    --background: 222 84% 3%;
+    --foreground: 210 40% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* Glass Cards */
+    --card: 222 84% 4% / 0.6;
+    --card-foreground: 210 40% 98%;
+    --card-border: 222 84% 15% / 0.3;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    /* Popover */
+    --popover: 222 84% 5%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Neon Cyan Primary */
+    --primary: 193 100% 50%;
+    --primary-foreground: 222 84% 3%;
+    --primary-glow: 193 100% 70%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Purple Secondary */
+    --secondary: 266 85% 58%;
+    --secondary-foreground: 210 40% 98%;
+    --secondary-glow: 266 85% 78%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Success Green for Available Slots */
+    --success: 142 76% 36%;
+    --success-foreground: 210 40% 98%;
+    --success-glow: 142 76% 56%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Warning Orange for Reserved Slots */
+    --warning: 32 95% 44%;
+    --warning-foreground: 210 40% 98%;
+    --warning-glow: 32 95% 64%;
 
-    --destructive: 0 84.2% 60.2%;
+    /* Destructive Red for Occupied */
+    --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Muted Elements */
+    --muted: 222 84% 8%;
+    --muted-foreground: 215 16% 57%;
 
-    --radius: 0.5rem;
+    /* Accent for Highlights */
+    --accent: 266 85% 58% / 0.1;
+    --accent-foreground: 266 85% 78%;
+
+    /* Borders and Inputs */
+    --border: 222 84% 15% / 0.3;
+    --input: 222 84% 8%;
+    --ring: 193 100% 50%;
+
+    /* Glass Effects */
+    --glass-bg: 222 84% 4% / 0.1;
+    --glass-border: 210 40% 98% / 0.1;
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(193 100% 50%) 0%, hsl(266 85% 58%) 100%);
+    --gradient-glass: linear-gradient(135deg, hsl(222 84% 4% / 0.1) 0%, hsl(222 84% 8% / 0.05) 100%);
+    --gradient-glow: radial-gradient(circle at center, hsl(193 100% 50% / 0.3) 0%, transparent 70%);
+
+    /* Shadows and Glows */
+    --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.15), 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+    --shadow-neon: 0 0 20px hsl(193 100% 50% / 0.5), 0 0 40px hsl(193 100% 50% / 0.3);
+    --shadow-purple: 0 0 20px hsl(266 85% 58% / 0.5);
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    --radius: 1rem;
 
     --sidebar-background: 0 0% 98%;
 
@@ -101,5 +140,113 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    background-image: radial-gradient(circle at 20% 20%, hsl(193 100% 50% / 0.05) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 80%, hsl(266 85% 58% / 0.05) 0%, transparent 50%);
+  }
+}
+
+@layer components {
+  /* Glass Card Component */
+  .glass-card {
+    @apply bg-card backdrop-blur-md border border-card-border rounded-2xl;
+    box-shadow: var(--shadow-glass);
+    background: var(--gradient-glass);
+  }
+
+  /* Neon Glow Effect */
+  .neon-glow {
+    box-shadow: var(--shadow-neon);
+  }
+
+  .purple-glow {
+    box-shadow: var(--shadow-purple);
+  }
+
+  /* Parking Slot Styles */
+  .slot-available {
+    @apply bg-success border-success-glow;
+    box-shadow: 0 0 10px hsl(var(--success-glow) / 0.3);
+  }
+
+  .slot-occupied {
+    @apply bg-destructive border-destructive;
+    box-shadow: 0 0 10px hsl(var(--destructive) / 0.3);
+  }
+
+  .slot-reserved {
+    @apply bg-warning border-warning-glow;
+    box-shadow: 0 0 10px hsl(var(--warning-glow) / 0.3);
+  }
+
+  /* AR Interface */
+  .ar-overlay {
+    @apply fixed inset-0 z-50 backdrop-blur-sm;
+    background: linear-gradient(135deg, hsl(222 84% 4% / 0.8) 0%, hsl(222 84% 8% / 0.6) 100%);
+  }
+
+  /* Route Path Animation */
+  .route-path {
+    stroke-dasharray: 10 5;
+    animation: route-flow 2s linear infinite;
+  }
+
+  @keyframes route-flow {
+    to {
+      stroke-dashoffset: -15;
+    }
+  }
+
+  /* Pulse Animation */
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes pulse-glow {
+    from {
+      box-shadow: 0 0 5px hsl(var(--primary) / 0.3);
+    }
+    to {
+      box-shadow: 0 0 20px hsl(var(--primary) / 0.6), 0 0 40px hsl(var(--primary) / 0.3);
+    }
+  }
+
+  /* Slide Up Animation */
+  .slide-up {
+    animation: slide-up 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Shimmer Effect */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  /* Floating Animation */
+  .float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
   }
 }
